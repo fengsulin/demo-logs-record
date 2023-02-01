@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  logstash.yml: |-
+    http.host: "0.0.0.0"
+    http.port: 9600
+    xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch.elk:9200"]
+    xpack.monitoring.elasticsearch.username: "logstash_system"
+    xpack.monitoring.elasticsearch.password: "logstash123456"
+    log.level: info
+    config.reload.automatic: true
+    config.reload.interval: 120s
+kind: ConfigMap
+metadata:
+  labels:
+    app: logstash
+  name: logstash-yml-config
+  namespace: elk

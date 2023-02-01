@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  logstash.conf: "input{\r\ntcp{\r\nport => 5044\r\nmode => \"server\"\r\ncodec =>
+    multiline {\r\npattern => \"^\\d+\"\r\nnegate => \"true\"\r\nwhat => \"previous\"\r\ncharset
+    => \"UTF-8\"\r\nauto_flush_interval => 3\r\n}\r\n}\r\nstdin{}\r\n}\r\nfilter{\r\ngrok{\r\n\"message\"
+    => \"(?m)^%{TIMESTAMP_ISO8601:createTime}%{SPACE}\\[%{DATA:threadName}\\]%{SPACE}%{LOGLEVEL:level}%{SPACE}%{DATA:javaClass}%{SPACE}-%{GREEDYDATA:msg}\"\r\n}\r\nif
+    [level] == \"DEBUG\" {\r\ndrop{}\r\n}\r\ndate{\r\nmatch => [\"createTime\",\"yyy-MM-dd
+    HH:mm:ss.SSS\"]\r\ntarget => \"@timestamp\"\r\n}\r\n}\r\noutput{\r\nelasticsearch
+    {\r\nhosts => [\"elasticsearch.elk:9200\"]\r\nindex => \"application-%{+YYYY.MM.dd}\"\r\nuser
+    => \"elastic\"\r\npassword => \"es123456\"\r\n}\r\nstdout {\r\ncodec => rubydebug\r\n}\r\n}"
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: elk

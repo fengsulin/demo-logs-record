@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+  namespace: elk
+spec:
+  serviceName: "logstash"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+        - image: hub.rdc.i139.cn/risk-mgt/logstash:7.6.0
+          name: logstash
+          ports:
+            - containerPort: 9600
+              name: server
+              protocol: TCP
+            - containerPort: 5044
+              name: management
+              protocol: TCP
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "400m"
+            limits:
+              memory: "800Mi"
+              cpu: "800m"
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/logstash.conf
+              subPath: logstash.conf
+            - name: logstash-yml
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+      volumes:
+        - name: logstash-yml
+          configMap:
+            name: logstash-config
+            items:
+              - key: "logstash.yml"
+                path: "logstash.yml"
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+            items:
+              - key: "logstash.conf"
+                path: "logstash.conf"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+  namespace: elk
+spec:
+  ports:
+    - name: management
+      port: 5044
+      protocol: TCP
+      targetPort: 5044
+      nodePort: 31488
+    - name: server
+      port: 9600
+      targetPort: 9600
+      nodePort: 31489
+  selector:
+    app: logstash
+  type: NodePort

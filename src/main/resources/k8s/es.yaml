@@ -1,0 +1,83 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    k8s.kuboard.cn/ingress: 'false'
+    k8s.kuboard.cn/service: none
+    k8s.kuboard.cn/workload: elasticsearch
+  generation: 50
+  labels:
+    app: es
+  name: elasticsearch
+  namespace: elk
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: es
+  serviceName: elasticsearch-svc
+  template:
+    metadata:
+      labels:
+        app: es
+    spec:
+      containers:
+        - env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: LANG
+              value: en_US_UTF-8
+            - name: ES_JAVA_OPTS
+              value: "-Xmx512m -Xms512m"
+            - name: ELASTIC_PASSWORD
+              value: "es123456"
+            - name: discovery.type
+              value: single-node
+            - name: http.cors.enabled
+              value: 'true'
+            - name: http.cors.allow-origin
+              value: '*'
+            - name: xpack.security.enabled
+              value: 'true'
+            - name: xpack.security.transport.ssl.enabled
+              value: 'true'
+            - name: path.data
+              value: /usr/share/elasticsearch/data
+            - name: path.logs
+              value: /usr/share/elasticsearch/logs
+            - name: http.max_initial_line_length
+              value: 16k
+            - name: http.max_header_size
+              value: 16k
+          image: 'hub.rdc.i139.cn/risk-mgt/elasticsearch:7.6.0'
+          imagePullPolicy: IfNotPresent
+          name: elasticsearch
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: data-storage
+              subPath: data
+            - mountPath: /usr/share/elasticsearch/logs
+              name: data-storage
+              subPath: logs
+            - mountPath: /etc/localtime
+              name: timezone
+            - mountPath: /usr/share/elasticsearch/plugins
+              name: data-storage
+              subPath: plugins
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: data-storage
+          persistentVolumeClaim:
+            claimName: es
+        - hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+            type: ''
+          name: timezone

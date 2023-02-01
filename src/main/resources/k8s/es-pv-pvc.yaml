@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: es
+  labels:
+    app: es
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /apps/nfs-storage/elk
+    server: 10.8.18.175
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: es
+  labels:
+    app: es
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      app: es

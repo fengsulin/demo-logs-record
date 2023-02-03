@@ -54,6 +54,7 @@ public class LogAspect {
                 .setAddress(IpUtils.getIpWithAllCache(FileUtil.getPath("data/ip2region.xdb"),IpUtils.getIpAddress(request)));
         xLogService.save((ProceedingJoinPoint)joinPoint,logEntity);
         ResultVo resultVo = (ResultVo) result;
+        Thread.sleep(5000);
         return resultVo;
     }
 

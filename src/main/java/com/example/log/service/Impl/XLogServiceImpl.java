@@ -15,6 +15,7 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,7 +33,13 @@ public class XLogServiceImpl implements XLogService {
         this.elasticsearchClient = elasticsearchClient;
     }
 
+    /**
+     * 日志存储到es
+     * @param joinPoint 切面签名
+     * @param xtLogEntity 日志实体
+     */
     @Override
+    @Async("asyncServiceExecutor")
     public void save(ProceedingJoinPoint joinPoint, XtLogEntity xtLogEntity) {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Method method = signature.getMethod();
